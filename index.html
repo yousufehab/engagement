@@ -30,7 +30,13 @@
   }
 
   /* twinkling background stars */
-  #sky{position:fixed;inset:0;pointer-events:none;z-index:0}
+  #sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .layer{position:absolute;inset:-50px;transition:transform .25s ease-out;will-change:transform}
+  #glow{
+    position:fixed;left:0;top:0;width:260px;height:260px;border-radius:50%;pointer-events:none;z-index:2;
+    opacity:0;transition:opacity .4s;will-change:transform;
+    background:radial-gradient(circle,rgba(255,160,190,.28),rgba(242,200,121,.12) 40%,transparent 70%);
+  }
   .tw{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;opacity:.2;
       animation:twinkle var(--d,3s) ease-in-out infinite;animation-delay:var(--dl,0s)}
   @keyframes twinkle{0%,100%{opacity:.1;transform:scale(.8)}50%{opacity:.9;transform:scale(1.4)}}
@@ -175,6 +181,7 @@
 <body>
 
 <div id="sky"></div>
+<div id="glow"></div>
 
 <!-- Intro: tap the star -->
 <div id="intro">
@@ -237,14 +244,23 @@
 
   /* background stars */
   var sky = document.getElementById('sky');
-  for (var i = 0; i < 70; i++){
+  var layerEls = [10, 22, 40].map(function(d){
+    var l = document.createElement('div');
+    l.className = 'layer';
+    l.dataset.depth = d;
+    sky.appendChild(l);
+    return l;
+  });
+  for (var i = 0; i < 100; i++){
+    var li = i % 3;                      // closer layers = bigger stars, move more
     var t = document.createElement('div');
     t.className = 'tw';
     t.style.left = Math.random()*100 + '%';
     t.style.top  = Math.random()*100 + '%';
+    t.style.width = t.style.height = (2 + li) + 'px';
     t.style.setProperty('--d', (2 + Math.random()*4) + 's');
     t.style.setProperty('--dl', (Math.random()*4) + 's');
-    sky.appendChild(t);
+    layerEls[li].appendChild(t);
   }
 
   /* falling autumn leaves */
@@ -286,16 +302,16 @@
   /* hearts */
   var colors = ['#ff5d8f','#ff7a9c','#ff3d6e','#ffa0b8','#f2c879','#ff8fb1'];
   var heartCount = 0;
-  function heart(x, y){
-    if (heartCount > 140) return;
+  function heart(x, y, ch, col, size){
+    if (heartCount > 200) return;
     heartCount++;
     var h = document.createElement('div');
     h.className = 'heart';
-    h.textContent = '\u2665';
+    h.textContent = ch || '\u2665';
     h.style.left = x + 'px';
     h.style.top  = y + 'px';
-    h.style.setProperty('--c', colors[Math.floor(Math.random()*colors.length)]);
-    h.style.setProperty('--s', (10 + Math.random()*14) + 'px');
+    h.style.setProperty('--c', col || colors[Math.floor(Math.random()*colors.length)]);
+    h.style.setProperty('--s', (size || (10 + Math.random()*14)) + 'px');
     h.style.setProperty('--t', (2.2 + Math.random()*1.6) + 's');
     h.style.setProperty('--dx', (-30 + Math.random()*60) + 'px');
     h.style.setProperty('--dy', (70 + Math.random()*90) + 'px');
@@ -387,9 +403,9 @@
   /* open the star */
   var intro = document.getElementById('intro');
   var card  = document.getElementById('card');
-  var opened = false;
+  var opened = false, openedAt = 0;
   function openStar(){
-    if (opened) return; opened = true;
+    if (opened) return; opened = true; openedAt = Date.now();
     intro.classList.add('open');
     // burst of hearts from the center
     var cx = W/2, cy = H/2;
@@ -400,6 +416,44 @@
     startMusic();
   }
   intro.addEventListener('click', openStar);
+
+  /* interactive background: glow follows the pointer, stars shift (parallax), sparkle trail */
+  var glow = document.getElementById('glow');
+  var lastSpark = 0;
+  window.addEventListener('pointermove', function(e){
+    var x = e.clientX, y = e.clientY;
+    glow.style.opacity = 1;
+    glow.style.transform = 'translate3d(' + (x-130) + 'px,' + (y-130) + 'px,0)';
+    var nx = x/W - .5, ny = y/H - .5;
+    for (var i = 0; i < layerEls.length; i++){
+      var d = +layerEls[i].dataset.depth;
+      layerEls[i].style.transform = 'translate3d(' + (-nx*d) + 'px,' + (-ny*d) + 'px,0)';
+    }
+    var now = performance.now();
+    if (opened && now - lastSpark > 90){
+      lastSpark = now;
+      heart(x, y, '\u2726', '#ffe5b0', 8 + Math.random()*8);
+    }
+  });
+
+  /* tap / click anywhere: burst of hearts + sparkles, butterflies fly to that spot */
+  document.addEventListener('click', function(e){
+    if (!opened || Date.now() - openedAt < 900) return;
+    if (e.target.closest && e.target.closest('a,button')) return;
+    var x = e.clientX, y = e.clientY;
+    for (var i = 0; i < 12; i++){
+      (function(k){
+        setTimeout(function(){
+          heart(x + Math.random()*40 - 20, y + Math.random()*40 - 20);
+          if (k % 2) heart(x, y, '\u2726', '#f2c879', 10 + Math.random()*10);
+        }, k*40);
+      })(i);
+    }
+    for (var j = 0; j < flies.length; j++){
+      flies[j].tx = x + Math.random()*120 - 60;
+      flies[j].ty = y + Math.random()*120 - 60;
+    }
+  });
 
   /* music: starts on the tap (browsers block autoplay without one) */
   var bgm = document.getElementById('bgm');
