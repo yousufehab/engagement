@@ -8,7 +8,7 @@
 <meta property="og:description" content="We fall in love in October. 16 October 2026">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Great+Vibes&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cormorant+Garamond:wght@400;600&family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg1:#2a0f1c;
@@ -67,6 +67,13 @@
   #core{fill:#fff6da;opacity:0;transform-origin:0 0}
   #intro.open #core{animation:coreGlow 1.3s ease forwards}
   @keyframes coreGlow{0%{opacity:.2;transform:scale(.4)}40%{opacity:1;transform:scale(3.2)}100%{opacity:0;transform:scale(9)}}
+  #bism{
+    font-family:'Amiri','Traditional Arabic',serif;font-weight:700;direction:rtl;
+    font-size:clamp(1.9rem,8vw,2.8rem);color:var(--gold2);text-align:center;line-height:1.5;
+    margin-bottom:28px;padding:0 16px;text-shadow:0 0 18px rgba(242,200,121,.6);
+    transition:opacity .4s;
+  }
+  #intro.open #bism{opacity:0}
   #hint{
     margin-top:34px;font-size:1.25rem;letter-spacing:.25em;text-transform:uppercase;
     color:var(--gold2);animation:pulse 2s ease-in-out infinite;text-align:center;padding:0 20px;
@@ -98,8 +105,8 @@
   }
   .small{letter-spacing:.38em;text-transform:uppercase;font-size:.9rem;color:var(--gold)}
   .names{
-    font-family:'Great Vibes',cursive;font-size:clamp(3rem,13vw,4.8rem);line-height:1.1;
-    margin:16px 0 6px;
+    font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:clamp(2.6rem,11vw,4rem);line-height:1.2;
+    letter-spacing:.03em;margin:16px 0 6px;
     background:linear-gradient(90deg,var(--gold2),var(--rose),var(--gold2));
     background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
     animation:shine 5s linear infinite;
@@ -107,7 +114,7 @@
   @keyframes shine{to{background-position:200% center}}
   .amp{display:block;font-size:.55em;color:var(--gold);-webkit-text-fill-color:var(--gold)}
   .tagline{
-    font-family:'Great Vibes',cursive;font-size:clamp(1.7rem,7vw,2.3rem);color:var(--rose);margin:10px 0 18px
+    font-family:'Dancing Script',cursive;font-weight:700;font-size:clamp(1.6rem,6.5vw,2.1rem);color:var(--rose);margin:10px 0 18px
   }
   .divider{display:flex;align-items:center;gap:12px;justify-content:center;color:var(--gold);margin:14px 0}
   .divider::before,.divider::after{content:"";height:1px;width:70px;background:linear-gradient(90deg,transparent,var(--gold))}
@@ -123,6 +130,14 @@
   .box b{display:block;font-size:clamp(1.7rem,8vw,2.4rem);font-weight:600;color:var(--gold2);
          font-variant-numeric:tabular-nums;line-height:1.1}
   .box span{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;opacity:.8}
+  .honor{margin-top:22px;font-size:1.35rem;font-style:italic;color:var(--gold2);letter-spacing:.04em}
+  .loc{
+    display:inline-flex;align-items:center;gap:8px;margin-top:22px;padding:12px 26px;
+    border:1px solid var(--gold);border-radius:999px;color:var(--gold2);text-decoration:none;
+    font-size:1.05rem;letter-spacing:.14em;text-transform:uppercase;
+    background:rgba(242,200,121,.08);transition:background .25s,transform .25s;
+  }
+  .loc:hover,.loc:active{background:rgba(242,200,121,.22);transform:translateY(-2px)}
   #done{display:none;font-family:'Great Vibes',cursive;font-size:2.4rem;color:var(--gold2);margin-top:22px}
 
   /* ---------- butterflies & hearts ---------- */
@@ -163,6 +178,7 @@
 
 <!-- Intro: tap the star -->
 <div id="intro">
+  <div id="bism">بسم الله نبدأ حكايتنا</div>
   <div id="starWrap">
     <svg viewBox="-100 -100 200 200" aria-label="Open the invitation">
       <defs>
@@ -201,6 +217,11 @@
       <div class="box"><b id="s">00</b><span>Seconds</span></div>
     </div>
     <div id="done">Today is the day! &#10084;</div>
+
+    <div class="honor">We would be honored by your presence</div>
+
+    <!-- Location: replace 30.0444,31.2357 with your coordinates (latitude,longitude) -->
+    <a class="loc" href="https://www.google.com/maps?q=30.0444,31.2357" target="_blank" rel="noopener">&#128205; Location</a>
   </div>
 </main>
 
