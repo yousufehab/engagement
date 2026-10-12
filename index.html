@@ -137,10 +137,10 @@
     width:var(--w,30px);height:calc(var(--w,30px) * 1.3);
     border-radius:46% 46% 38% 38% / 55% 55% 30% 30%;
     background:radial-gradient(ellipse at 50% 70%,#fff3c4 0%,#ffc45a 45%,#ff8a2a 100%);
-    box-shadow:0 0 18px 6px rgba(255,170,70,.5),0 0 50px 14px rgba(255,140,60,.22);
+    box-shadow:0 0 9px 3px rgba(255,170,70,.5),0 0 25px 7px rgba(255,140,60,.22);
     opacity:0;will-change:transform,opacity,filter;
   }
-  .fl::after{content:"";position:absolute;left:25%;right:25%;bottom:-3px;height:4px;background:#5a2a10;border-radius:2px}
+  .fl::after{content:"";position:absolute;left:25%;right:25%;bottom:-2px;height:2px;background:#5a2a10;border-radius:2px}
 
   /* ---------- invitation ---------- */
   #card{
@@ -425,7 +425,7 @@
 
   function spawnLantern(x, y, wish){
     if (lanterns.length >= MAX_LANTERNS) return null;
-    var w = wish ? 22 + Math.random()*10 : 20 + Math.random()*28;
+    var w = wish ? 11 + Math.random()*5 : 10 + Math.random()*14;
     var el = document.createElement('div');
     el.className = 'fl';
     el.style.setProperty('--w', w + 'px');
