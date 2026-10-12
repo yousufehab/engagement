@@ -131,24 +131,16 @@
     100%{transform:translateY(-130vh) rotate(3deg)}
   }
 
-  /* floating lanterns across the page */
+  /* floating lanterns (moved by JS so they react to touch) */
   .fl{
-    position:fixed;bottom:-120px;z-index:1;pointer-events:none;
+    position:fixed;left:0;top:0;z-index:1;pointer-events:none;
     width:var(--w,30px);height:calc(var(--w,30px) * 1.3);
     border-radius:46% 46% 38% 38% / 55% 55% 30% 30%;
     background:radial-gradient(ellipse at 50% 70%,#fff3c4 0%,#ffc45a 45%,#ff8a2a 100%);
     box-shadow:0 0 18px 6px rgba(255,170,70,.5),0 0 50px 14px rgba(255,140,60,.22);
-    opacity:0;
-    animation:rise var(--t,20s) linear forwards, flick 1.4s ease-in-out infinite alternate;
+    opacity:0;will-change:transform,opacity,filter;
   }
   .fl::after{content:"";position:absolute;left:25%;right:25%;bottom:-3px;height:4px;background:#5a2a10;border-radius:2px}
-  @keyframes rise{
-    0%{opacity:0;transform:translate3d(0,0,0)}
-    8%{opacity:.9}
-    85%{opacity:.9}
-    100%{opacity:0;transform:translate3d(var(--dx,40px),-125vh,0)}
-  }
-  @keyframes flick{from{filter:brightness(.88)}to{filter:brightness(1.15)}}
 
   /* ---------- invitation ---------- */
   #card{
@@ -209,11 +201,7 @@
   .loc:hover,.loc:active{background:rgba(242,200,121,.22);transform:translateY(-2px)}
   #done{display:none;font-family:'Great Vibes',cursive;font-size:2.4rem;color:var(--gold2);margin-top:22px}
 
-  /* ---------- butterflies & hearts ---------- */
-  .bf{position:fixed;left:0;top:0;width:38px;height:38px;z-index:4;pointer-events:none;will-change:transform}
-  .bf svg{width:100%;height:100%;overflow:visible}
-  .wings{transform-origin:20px 20px;animation:flap .22s ease-in-out infinite alternate}
-  @keyframes flap{from{transform:scaleX(1)}to{transform:scaleX(.25)}}
+  /* ---------- hearts ---------- */
   .heart{
     position:fixed;z-index:3;pointer-events:none;line-height:1;
     color:var(--c,#ff5d8f);font-size:var(--s,14px);
@@ -422,100 +410,136 @@
     setTimeout(function(){ h.remove(); heartCount--; }, 4000);
   }
 
-  /* butterflies */
-  var BF_SVG =
-    '<svg viewBox="0 0 40 40"><g class="wings">' +
-    '<path d="M20 20 C30 3 41 8 36 18 C34 24 26 24 20 20Z" fill="COLOR1"/>' +
-    '<path d="M20 21 C28 22 35 30 30 35 C26 37 21 29 20 21Z" fill="COLOR2"/>' +
-    '<path d="M20 20 C10 3 -1 8 4 18 C6 24 14 24 20 20Z" fill="COLOR1"/>' +
-    '<path d="M20 21 C12 22 5 30 10 35 C14 37 19 29 20 21Z" fill="COLOR2"/>' +
-    '</g><rect x="19" y="12" width="2" height="18" rx="1" fill="#3a1a2a"/>' +
-    '<path d="M20 12 Q16 5 13 4 M20 12 Q24 5 27 4" stroke="#3a1a2a" stroke-width="1" fill="none"/></svg>';
-  var palettes = [
-    ['#ff7a9c','#ffc2d4'],
-    ['#f2c879','#ffe5b0'],
-    ['#c58bff','#e6ccff'],
-    ['#ff9a5c','#ffd0a8'],
-    ['#6fd3ff','#c6eeff']
-  ];
-  var flies = [];
   var W = window.innerWidth, H = window.innerHeight;
   window.addEventListener('resize', function(){ W = innerWidth; H = innerHeight; });
 
-  function newTarget(f){
-    f.tx = 40 + Math.random()*(W - 80);
-    f.ty = 60 + Math.random()*(H - 120);
-  }
-  function makeButterfly(){
-    var p = palettes[Math.floor(Math.random()*palettes.length)];
+  /* pointer position (updated by the pointermove handler below) */
+  var ptX = -9999, ptY = -9999, ptAt = 0;
+  window.addEventListener('pointerup', function(e){ if (e.pointerType !== 'mouse') ptX = -9999; });
+  document.documentElement.addEventListener('pointerleave', function(){ ptX = -9999; });
+
+  /* ---------- interactive lanterns ---------- */
+  var lanterns = [];
+  var MAX_LANTERNS = 26;
+  function lanternTarget(){ return W < 600 ? 9 : 14; }
+
+  function spawnLantern(x, y, wish){
+    if (lanterns.length >= MAX_LANTERNS) return null;
+    var w = wish ? 22 + Math.random()*10 : 20 + Math.random()*28;
     var el = document.createElement('div');
-    el.className = 'bf';
-    el.innerHTML = BF_SVG.replace(/COLOR1/g,p[0]).replace(/COLOR2/g,p[1]);
+    el.className = 'fl';
+    el.style.setProperty('--w', w + 'px');
     document.body.appendChild(el);
-    var side = Math.random() < .5;
-    var f = {
-      el: el,
-      x: side ? -50 : W + 50,
-      y: Math.random()*H,
-      vx: side ? 1.5 : -1.5,
-      vy: 0,
-      speed: 1.6 + Math.random()*1.2,
-      wob: Math.random()*6.28,
-      lastHeart: 0
+    var rise = 0.45 + Math.random()*0.5;
+    var L = {
+      el: el, w: w, h: w*1.3,
+      x: (x === undefined) ? Math.random()*W : x,
+      y: (y === undefined) ? H + 40 + Math.random()*120 : y,
+      vx: 0, vy: wish ? -2.2 : -rise,
+      rise: rise, ph: Math.random()*6.28,
+      born: performance.now(), state: 0, pt: 0, hot: 0
     };
-    newTarget(f);
-    flies.push(f);
+    lanterns.push(L);
+    return L;
   }
 
-  var last = performance.now();
-  function loop(now){
-    var dt = Math.min(2, (now - last)/16.67); last = now;
-    for (var i = 0; i < flies.length; i++){
-      var f = flies[i];
-      var dx = f.tx - f.x, dy = f.ty - f.y;
-      var dist = Math.hypot(dx, dy);
-      if (dist < 50) newTarget(f);
-      f.wob += .08*dt;
-      var wx = Math.cos(f.wob*1.3)*.35, wy = Math.sin(f.wob)*.5;
-      var ax = dx/dist*.07 + wx*.05, ay = dy/dist*.07 + wy*.05;
-      f.vx += ax*dt; f.vy += ay*dt;
-      var sp = Math.hypot(f.vx, f.vy);
-      if (sp > f.speed){ f.vx = f.vx/sp*f.speed; f.vy = f.vy/sp*f.speed; }
-      f.x += f.vx*dt; f.y += f.vy*dt;
-      var ang = Math.atan2(f.vy, f.vx)*180/Math.PI + 90;
-      f.el.style.transform = 'translate3d(' + (f.x-19) + 'px,' + (f.y-19) + 'px,0) rotate(' + ang + 'deg)';
-      if (now - f.lastHeart > 260){
-        f.lastHeart = now + Math.random()*120;
-        // heart appears behind the butterfly
-        var bx = f.x - f.vx*6, by = f.y - f.vy*6;
-        heart(bx, by);
+  function lanternAt(x, y){
+    var best = null, bd = 1e9;
+    for (var i = 0; i < lanterns.length; i++){
+      var L = lanterns[i];
+      if (L.state) continue;
+      var d = Math.hypot(x - L.x, y - L.y);
+      if (d < Math.max(L.w*0.95, 28) + 8 && d < bd){ bd = d; best = L; }
+    }
+    return best;
+  }
+
+  /* push lanterns away from a point (and make them glow) */
+  function shockwave(x, y, R, k){
+    R = R || 220; k = k || 3.2;
+    for (var i = 0; i < lanterns.length; i++){
+      var L = lanterns[i];
+      if (L.state) continue;
+      var dx = L.x - x, dy = L.y - y, d = Math.hypot(dx, dy) || 1;
+      if (d < R){
+        var f = (1 - d/R) * k;
+        L.vx += dx/d*f; L.vy += dy/d*f - f*0.5; L.hot = 1;
       }
     }
-    requestAnimationFrame(loop);
   }
 
-  function startButterflies(){
-    var n = W < 600 ? 4 : 7;
-    for (var i = 0; i < n; i++){
-      (function(k){ setTimeout(makeButterfly, k*700); })(i);
+  /* tapping a lantern pops it into hearts and sparkles */
+  function popLantern(L){
+    L.state = 1; L.pt = 0;
+    for (var i = 0; i < 9; i++){
+      (function(k){
+        setTimeout(function(){
+          heart(L.x + Math.random()*30 - 15, L.y + Math.random()*30 - 15);
+          if (k % 2) heart(L.x, L.y, '✦', '#ffe5b0', 10 + Math.random()*10);
+        }, k*45);
+      })(i);
     }
-    requestAnimationFrame(loop);
+    shockwave(L.x, L.y, 150, 1.8);
   }
 
-  /* floating lanterns */
-  function spawnLantern(){
-    var l = document.createElement('div');
-    l.className = 'fl';
-    l.style.left = (Math.random()*96) + 'vw';
-    l.style.setProperty('--w', (18 + Math.random()*26) + 'px');
-    l.style.setProperty('--t', (16 + Math.random()*14) + 's');
-    l.style.setProperty('--dx', (-60 + Math.random()*120) + 'px');
-    document.body.appendChild(l);
-    setTimeout(function(){ l.remove(); }, 31000);
+  var lastT = performance.now(), lastMaint = 0;
+  function lanternLoop(now){
+    var dt = Math.min(2, (now - lastT)/16.67); lastT = now;
+    var active = ptX > -9000 && (now - ptAt) < 4000;
+    for (var i = lanterns.length - 1; i >= 0; i--){
+      var L = lanterns[i];
+
+      if (L.state === 1){                       // popping
+        L.pt += dt;
+        var k = L.pt/16;
+        if (k >= 1){ L.el.remove(); lanterns.splice(i, 1); continue; }
+        L.el.style.opacity = (1 - k).toFixed(3);
+        L.el.style.filter = 'brightness(' + (1.3 + k).toFixed(2) + ')';
+        L.el.style.transform = 'translate3d(' + (L.x - L.w/2).toFixed(1) + 'px,' + (L.y - L.h/2).toFixed(1) + 'px,0) scale(' + (1 + k*1.1).toFixed(3) + ')';
+        continue;
+      }
+
+      if (active){                              // finger / mouse gently pushes lanterns away
+        var dx = L.x - ptX, dy = L.y - ptY, d = Math.hypot(dx, dy) || 1, R = 130;
+        if (d < R){
+          var f = (1 - d/R) * 0.55 * dt;
+          L.vx += dx/d*f; L.vy += dy/d*f;
+          L.hot = Math.min(1, L.hot + .08*dt);
+        }
+      }
+
+      L.ph += .02*dt;                           // sway, then settle back to the gentle rise
+      L.vx += Math.sin(L.ph)*.012*dt;
+      L.vx *= Math.pow(.97, dt);
+      L.vy += (-L.rise - L.vy)*.025*dt;
+      L.x += L.vx*dt; L.y += L.vy*dt;
+      if (L.x < -30) L.x = W + 30; else if (L.x > W + 30) L.x = -30;
+      L.hot = Math.max(0, L.hot - .012*dt);
+      if (L.y < -L.h - 40){ L.el.remove(); lanterns.splice(i, 1); continue; }
+
+      var age    = Math.min(1, (now - L.born)/900);
+      var top    = Math.min(1, Math.max(0, (L.y + 40)/160));
+      var bottom = Math.min(1, Math.max(0, (H + 60 - L.y)/90));
+      var flick  = 1 + Math.sin(now/230 + L.ph*3)*.08 + L.hot*.35;
+      var sc     = 1 + L.hot*.14;
+      L.el.style.opacity = (0.92*age*top*bottom).toFixed(3);
+      L.el.style.filter = 'brightness(' + flick.toFixed(3) + ')';
+      L.el.style.transform = 'translate3d(' + (L.x - L.w/2).toFixed(1) + 'px,' + (L.y - L.h/2).toFixed(1) + 'px,0) rotate(' + (L.vx*5).toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')';
+    }
+    if (now - lastMaint > 1000){
+      lastMaint = now;
+      if (lanterns.length < lanternTarget()) spawnLantern();
+    }
+    requestAnimationFrame(lanternLoop);
   }
+
+  var lanternsOn = false;
   function startLanterns(){
-    for (var i = 0; i < 6; i++) setTimeout(spawnLantern, i*500);
-    setInterval(spawnLantern, 2200);
+    if (lanternsOn) return; lanternsOn = true;
+    var n = lanternTarget();
+    for (var i = 0; i < n; i++) spawnLantern(Math.random()*W, H*(0.15 + Math.random()*0.8));
+    lastT = performance.now();
+    requestAnimationFrame(lanternLoop);
   }
 
   /* open the star */
@@ -531,8 +555,7 @@
     card.classList.add('show');
     showBg();
     setTimeout(function(){ intro.classList.add('gone'); }, 3300);
-    setTimeout(startLanterns, 2200);
-    setTimeout(startButterflies, 700);
+    setTimeout(startLanterns, 1200);
     startMusic();
   }
   intro.addEventListener('click', openStar);
@@ -542,6 +565,7 @@
   var lastSpark = 0;
   window.addEventListener('pointermove', function(e){
     var x = e.clientX, y = e.clientY;
+    ptX = x; ptY = y; ptAt = performance.now();
     glow.style.opacity = 1;
     glow.style.transform = 'translate3d(' + (x-130) + 'px,' + (y-130) + 'px,0)';
     var nx = x/W - .5, ny = y/H - .5;
@@ -556,23 +580,23 @@
     }
   });
 
-  /* tap / click anywhere: burst of hearts + sparkles, butterflies fly to that spot */
+  /* tap / click: pop a lantern if you hit one, otherwise hearts + a shockwave + a new wish lantern */
   document.addEventListener('click', function(e){
     if (!opened || Date.now() - openedAt < 900) return;
     if (e.target.closest && e.target.closest('a,button')) return;
     var x = e.clientX, y = e.clientY;
+    var hit = lanternAt(x, y);
+    if (hit){ popLantern(hit); return; }
     for (var i = 0; i < 12; i++){
       (function(k){
         setTimeout(function(){
           heart(x + Math.random()*40 - 20, y + Math.random()*40 - 20);
-          if (k % 2) heart(x, y, '\u2726', '#f2c879', 10 + Math.random()*10);
+          if (k % 2) heart(x, y, '✦', '#f2c879', 10 + Math.random()*10);
         }, k*40);
       })(i);
     }
-    for (var j = 0; j < flies.length; j++){
-      flies[j].tx = x + Math.random()*120 - 60;
-      flies[j].ty = y + Math.random()*120 - 60;
-    }
+    shockwave(x, y);
+    spawnLantern(x, y, true);
   });
 
   /* music: starts on the tap (browsers block autoplay without one) */
