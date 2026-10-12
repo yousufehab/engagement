@@ -92,6 +92,45 @@
   #intro.open #hint{opacity:0;transition:opacity .3s;animation:none}
   @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
 
+  /* ---------- curtains + horse ---------- */
+  #intro.open{pointer-events:none}
+  #intro > #bism,#intro > #horseSvg,#intro > #hint{position:relative;z-index:2}
+  .cur{
+    position:absolute;top:0;bottom:0;width:50.5%;z-index:0;
+    background:
+      repeating-linear-gradient(90deg,rgba(0,0,0,.30) 0 6px,rgba(255,255,255,.06) 6px 14px,rgba(0,0,0,0) 14px 38px),
+      linear-gradient(180deg,#7a1230,#4a0a1e 70%,#33071a);
+    box-shadow:inset 0 0 70px rgba(0,0,0,.55);
+    transition:transform 1.5s cubic-bezier(.65,0,.2,1) .55s;
+  }
+  .cl{left:0;border-right:2px solid var(--gold)}
+  .cr{right:0;border-left:2px solid var(--gold)}
+  #intro.open .cl{transform:translateX(-102%)}
+  #intro.open .cr{transform:translateX(102%)}
+  .rod{
+    position:absolute;top:0;left:0;right:0;height:12px;z-index:1;
+    background:linear-gradient(#ffe5b0,#f2c879 60%,#b27a2b);box-shadow:0 4px 12px rgba(0,0,0,.5);
+    transition:transform .8s ease 1.3s;
+  }
+  #intro.open .rod{transform:translateY(-120%)}
+  #horseSvg{width:min(86vw,340px);height:auto;overflow:visible;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}
+  .horse{transform-origin:200px 282px;animation:idle 3s ease-in-out infinite}
+  @keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  #intro.open .horse{animation:tug .8s ease-out forwards}
+  @keyframes tug{
+    0%{transform:translate(0,0) rotate(0)}
+    45%{transform:translate(-22px,2px) rotate(-3deg)}
+    100%{transform:translate(-14px,0) rotate(-1deg)}
+  }
+  .bow{transform-origin:158px 32px}
+  #intro.open .bow{animation:untie .7s ease-in .35s forwards}
+  @keyframes untie{
+    0%{transform:none;opacity:1}
+    100%{transform:translateY(80px) rotate(40deg) scale(.6);opacity:0}
+  }
+  #intro.open #horseSvg{animation:trot 1.5s cubic-bezier(.5,0,.8,.6) .9s forwards}
+  @keyframes trot{to{transform:translateX(-130vw)}}
+
   /* ---------- invitation ---------- */
   #card{
     position:relative;z-index:3;min-height:100vh;min-height:100dvh;
@@ -192,23 +231,67 @@
 <!-- Intro: tap the star -->
 <div id="intro">
   <div id="bism">بسم الله نبدأ حكايتنا</div>
-  <div id="starWrap">
-    <svg viewBox="-100 -100 200 200" aria-label="Open the invitation">
-      <defs>
-        <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#fff0bf"/>
-          <stop offset="1" stop-color="#e9a94a"/>
-        </linearGradient>
-      </defs>
-      <g class="petal" transform="rotate(0)"><polygon points="0,0 -21.2,-29.1 0,-90 21.2,-29.1"/></g>
-      <g class="petal" transform="rotate(72)"><polygon points="0,0 -21.2,-29.1 0,-90 21.2,-29.1"/></g>
-      <g class="petal" transform="rotate(144)"><polygon points="0,0 -21.2,-29.1 0,-90 21.2,-29.1"/></g>
-      <g class="petal" transform="rotate(216)"><polygon points="0,0 -21.2,-29.1 0,-90 21.2,-29.1"/></g>
-      <g class="petal" transform="rotate(288)"><polygon points="0,0 -21.2,-29.1 0,-90 21.2,-29.1"/></g>
-      <circle id="core" r="14"/>
-    </svg>
-  </div>
-  <div id="hint">Tap the star</div>
+  <div class="rod"></div>
+  <div class="cur cl"></div>
+  <div class="cur cr"></div>
+
+  <svg id="horseSvg" viewBox="0 0 320 300" aria-label="Tap to open the invitation">
+    <defs>
+      <linearGradient id="rib" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ffd27a"/>
+        <stop offset="1" stop-color="#ff7a9c"/>
+      </linearGradient>
+      <linearGradient id="coat" gradientUnits="userSpaceOnUse" x1="0" y1="110" x2="0" y2="285">
+        <stop offset="0" stop-color="#c46a36"/>
+        <stop offset="1" stop-color="#8f431f"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="205" cy="286" rx="112" ry="8" fill="rgba(0,0,0,.35)"/>
+    <g class="horse">
+      <!-- tail -->
+      <path d="M290 128 C312 138 316 185 298 232 C304 190 294 162 284 150 Z" fill="#3b1d12"/>
+      <!-- far legs -->
+      <path d="M184 192 L202 192 L198 245 L199 275 L183 275 L185 245 Z" fill="#7c3a1a"/>
+      <path d="M232 192 L262 190 L256 235 L252 272 L236 272 L240 235 Z" fill="#7c3a1a"/>
+      <path d="M182 272 L204 272 L205 283 L180 283 Z" fill="#2a140c"/>
+      <path d="M234 270 L254 270 L255 281 L232 281 Z" fill="#2a140c"/>
+      <!-- body -->
+      <path d="M150 140 C150 120 190 112 235 114 C275 116 295 130 292 165 C290 195 270 205 240 205 C205 205 180 200 160 195 C148 185 148 160 150 140 Z" fill="url(#coat)"/>
+      <!-- near legs -->
+      <path d="M158 190 L178 190 L174 245 L176 275 L158 275 L160 245 Z" fill="url(#coat)"/>
+      <path d="M255 190 L290 185 L282 235 L276 272 L258 272 L262 235 Z" fill="url(#coat)"/>
+      <path d="M156 272 L180 272 L182 284 L154 284 Z" fill="#2a140c"/>
+      <path d="M256 270 L278 270 L280 282 L254 282 Z" fill="#2a140c"/>
+      <!-- blanket -->
+      <path d="M196 114 L250 117 L252 162 L200 160 Z" fill="#1f6f78" stroke="#f2c879" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M225 150 C211 140 214 130 221 130 C224 130 225 133 225 133 C225 133 226 130 229 130 C236 130 239 140 225 150 Z" fill="#f2c879"/>
+      <!-- neck -->
+      <path d="M122 58 C140 52 165 70 178 105 L186 125 L152 150 C150 125 142 105 138 88 Z" fill="url(#coat)"/>
+      <!-- mane -->
+      <path d="M120 54 C145 46 175 68 190 108 C170 92 150 76 128 72 Z" fill="#3b1d12"/>
+      <path d="M120 56 L106 72 L124 67 Z" fill="#3b1d12"/>
+      <!-- head -->
+      <path d="M122 58 C108 66 88 100 76 122 C72 130 78 138 90 138 C100 138 106 130 112 124 C122 112 132 100 138 88 Z" fill="url(#coat)"/>
+      <!-- ear -->
+      <path d="M116 60 L112 36 L132 54 Z" fill="#8f431f"/>
+      <!-- eye, nostril, mouth -->
+      <circle cx="113" cy="86" r="3.2" fill="#1b0d08"/>
+      <circle cx="114" cy="85" r="1" fill="#fff"/>
+      <ellipse cx="82" cy="128" rx="2.4" ry="1.6" fill="#2a140c"/>
+      <path d="M92 137 L106 128" stroke="#2a140c" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+      <!-- ribbon held in the mouth -->
+      <path d="M90 134 C68 100 118 70 154 36" fill="none" stroke="url(#rib)" stroke-width="6" stroke-linecap="round"/>
+    </g>
+    <!-- bow tying the curtains -->
+    <g class="bow">
+      <path d="M158 30 C132 4 112 34 158 34 Z" fill="#ff7a9c"/>
+      <path d="M158 30 C184 4 204 34 158 34 Z" fill="#ff7a9c"/>
+      <path d="M158 34 L144 58 L154 54 L158 62 Z" fill="#ffb3c6"/>
+      <path d="M158 34 L172 58 L162 54 L158 62 Z" fill="#ffb3c6"/>
+      <circle cx="158" cy="32" r="6" fill="#ffd27a"/>
+    </g>
+  </svg>
+  <div id="hint">Tap to open</div>
 </div>
 
 <!-- Invitation -->
@@ -249,13 +332,19 @@
   /* ================================================================================ */
 
   /* optional background picture: upload a file named background.jpg next to index.html */
+  var bgReady = false, bgShown = false;
+  function showBg(){          // called when the user taps: the picture fades in only after the tap
+    bgShown = true;
+    if (bgReady) document.getElementById('bgimg').classList.add('on');
+  }
   (function(){
     var url = 'background.jpg';
     var im = new Image();
     im.onload = function(){
       var b = document.getElementById('bgimg');
       b.style.backgroundImage = 'linear-gradient(rgba(18,7,14,.40),rgba(18,7,14,.62)), url("' + url + '")';
-      b.classList.add('on');
+      bgReady = true;
+      if (bgShown) b.classList.add('on');
     };
     im.src = url;   // if the file does not exist nothing changes
   })();
@@ -429,7 +518,8 @@
     var cx = W/2, cy = H/2;
     for (var i = 0; i < 18; i++){ (function(k){ setTimeout(function(){ heart(cx + (Math.random()*60-30), cy + (Math.random()*60-30)); }, k*50); })(i); }
     card.classList.add('show');
-    setTimeout(function(){ intro.classList.add('gone'); }, 1100);
+    showBg();
+    setTimeout(function(){ intro.classList.add('gone'); }, 2700);
     setTimeout(startButterflies, 700);
     startMusic();
   }
