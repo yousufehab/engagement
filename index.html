@@ -30,6 +30,11 @@
   }
 
   /* twinkling background stars */
+  #bgimg{
+    position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.2s;
+    background-position:center;background-size:cover;background-repeat:no-repeat;
+  }
+  #bgimg.on{opacity:1}
   #sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
   .layer{position:absolute;inset:-50px;transition:transform .25s ease-out;will-change:transform}
   #glow{
@@ -180,6 +185,7 @@
 </head>
 <body>
 
+<div id="bgimg"></div>
 <div id="sky"></div>
 <div id="glow"></div>
 
@@ -241,6 +247,18 @@
   /* ====== EDIT HERE: event date & time (year, month 0-11, day, hour, minute) ====== */
   var TARGET = new Date(2026, 9, 16, 19, 0, 0);   // 16 Oct 2026 - 7:00 PM
   /* ================================================================================ */
+
+  /* optional background picture: upload a file named background.jpg next to index.html */
+  (function(){
+    var url = 'background.jpg';
+    var im = new Image();
+    im.onload = function(){
+      var b = document.getElementById('bgimg');
+      b.style.backgroundImage = 'linear-gradient(rgba(18,7,14,.40),rgba(18,7,14,.62)), url("' + url + '")';
+      b.classList.add('on');
+    };
+    im.src = url;   // if the file does not exist nothing changes
+  })();
 
   /* background stars */
   var sky = document.getElementById('sky');
